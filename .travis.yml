@@ -4,4 +4,4 @@ python:
 install:
   - pip install numpy
 script:
-  - SimplexMethod.py
+  - python SimplexMethod.py
