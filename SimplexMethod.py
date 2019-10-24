@@ -13,22 +13,30 @@ import numpy as np
 #最適化問題の定義
 #       Maximize    :Fx
 #       Subject to  :Gx=0   (k本)
-#                    Hpx>=0 (l本)
-#                    Hmx<=0 (m本)
+#                    Hpx>=h (l本)
+#                    Hmx<=h (m本)
 #                    xj>=0  (n本)
 #**********************************************************
 
 
 #**********シンプレックス法のフロー部分**********
-def SimplexMethod(_F, _G, _g, _Hp, _hp, _Hm, _hm):
+def SimplexMethod(_F, _G, _g, _H, _h):
+    hpindex = np.where(_h <= 0)
+    hmindex = np.where(_h > 0)
+
+    Hp = -_H[hpindex]
+    hp = -_h[hpindex]
+    Hm = _H[hmindex]
+    hm = _h[hmindex]
+
     n = _F.shape[0]     #設計変数ベクトルの次元
     k = _G.shape[0]     #等式制約ベクトルの次元
-    l = _Hp.shape[0]    #逆向き不等式制約ベクトルの次元
-    m = _Hm.shape[0]    #順向き不等式制約ベクトルの次元
+    l = Hp.shape[0]     #逆向き不等式制約ベクトルの次元
+    m = Hm.shape[0]     #順向き不等式制約ベクトルの次元
 
     #----------第一段階----------
-    A1 = np.block([[_Hm, np.eye(m), np.zeros((m, l)), np.zeros((m, l)), np.zeros((m, k))], [_Hp, np.zeros((l, m)), -np.eye(l), np.eye(l), np.zeros((l, k))], [_G, np.zeros((k, m)), np.zeros((k, l)), np.zeros((k, l)), np.eye(k)]])
-    b1 = np.block([_hm, _hp, _g])
+    A1 = np.block([[Hm, np.eye(m), np.zeros((m, l)), np.zeros((m, l)), np.zeros((m, k))], [Hp, np.zeros((l, m)), -np.eye(l), np.eye(l), np.zeros((l, k))], [_G, np.zeros((k, m)), np.zeros((k, l)), np.zeros((k, l)), np.eye(k)]])
+    b1 = np.block([hm, hp, _g])
     c1 = np.block([np.zeros(n+m+l), -np.ones(l+k)])
     xbindex = np.block([np.arange(n, n+m, 1, dtype = 'int'), np.arange(n+m+l, n+m+2*l+k, 1, dtype = 'int')]) 
     Binv = np.eye(m+l+k)
@@ -101,16 +109,14 @@ if __name__ == "__main__":
     G = np.zeros((1, 2));   g = np.zeros(1)
     G[0][0] = 1.0;  G[0][1] = -1.0; g[0] = 15.0
 
-    Hp = np.zeros((1, 2));  hp = np.zeros(1)
-    Hp[0][0] = 2.0; Hp[0][1] = 5.0; hp[0] = 30.0
-    
-    Hm = np.zeros((1, 2));  hm = np.zeros(1)
-    Hm[0][0] = 2.0; Hm[0][1] = 1.0; hm[0] = 60.0
+    H = np.zeros((2, 2));  h = np.zeros(2)
+    H[0][0] = -2.0; H[0][1] = -5.0; h[0] = -30.0
+    H[1][0] = 2.0;  H[1][1] = 1.0;  h[1] = 60.0
     
     #----------目的関数の定義----------
     F = np.zeros(2)
     F[0] = 6.0; F[1] = 7.0;
 
     #----------シンプレックス法の実行----------
-    x = SimplexMethod(F, G, g, Hp, hp, Hm, hm)
+    x = SimplexMethod(F, G, g, H, h)
     print(x)
