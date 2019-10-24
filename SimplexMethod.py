@@ -20,7 +20,14 @@ import numpy as np
 
 
 #**********シンプレックス法のフロー部分**********
-def SimplexMethod(_F, _G, _g, _H, _h):
+def SimplexMethod(_F, _G = None, _g = None, _H = None, _h = None):
+    if(_G is None):
+        _G = np.empty((0, _F.shape[0]))
+        _g = np.empty(0)
+    elif(_H is None):
+        _H = np.empty((0, _F.shape[0]))
+        _h = np.empty(0)
+
     hpindex = np.where(_h <= 0)
     hmindex = np.where(_h > 0)
 
@@ -115,7 +122,7 @@ if __name__ == "__main__":
     
     #----------目的関数の定義----------
     F = np.zeros(2)
-    F[0] = 6.0; F[1] = 7.0;
+    F[0] = 6.0; F[1] = 7.0
 
     #----------シンプレックス法の実行----------
     x = SimplexMethod(F, G, g, H, h)
